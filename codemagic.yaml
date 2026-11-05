@@ -1,0 +1,29 @@
+workflows:
+  ios-unsigned:
+    name: Unsigned IPA for SideStore
+    instance_type: mac_mini_m2
+    max_build_duration: 30
+    environment:
+      node: 22
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Install dependencies
+        script: npm install
+      - name: Generate native iOS project
+        script: npx expo prebuild --platform ios --no-install
+      - name: Install pods
+        script: cd ios && pod install
+      - name: Build unsigned app
+        script: |
+          cd ios
+          xcodebuild -workspace TimeBlocker.xcworkspace -scheme TimeBlocker \
+            -configuration Release -sdk iphoneos -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
+      - name: Package IPA
+        script: |
+          mkdir -p Payload
+          cp -R ios/build/Build/Products/Release-iphoneos/TimeBlocker.app Payload/
+          zip -r TimeBlocker.ipa Payload
+    artifacts:
+      - TimeBlocker.ipa
