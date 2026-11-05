@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, FlatList, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { File, Paths } from 'expo-file-system';
 import { blockDomain, Settings, unblockDomain } from './src/nextdns';
 import { Block, KEYS, load, save } from './src/storage';
 
@@ -33,7 +34,16 @@ export default function App() {
       setLoaded(true);
     })();
   }, []);
-  useEffect(() => { if (loaded) save(KEYS.blocks, blocks); }, [blocks, loaded]);
+  useEffect(() => {
+    if (!loaded) return;
+    save(KEYS.blocks, blocks);
+    // Also write blocks.json where the "Is App Blocked" Shortcuts action can read it.
+    try {
+      const f = new File(Paths.document, 'blocks.json');
+      f.create({ overwrite: true });
+      f.write(JSON.stringify(blocks));
+    } catch {}
+  }, [blocks, loaded]);
   useEffect(() => { if (loaded) save(KEYS.settings, settings); }, [settings, loaded]);
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 1000);
@@ -135,7 +145,7 @@ export default function App() {
           </View>
           <View style={s.card}>
             <Text style={s.h}>App blocking (Shortcuts)</Text>
-            <Text style={s.p}>iOS won't let a sideloaded app block other apps, so use a Shortcuts automation:{'\n'}1. Open Shortcuts, then Automation, then New, then App.{'\n'}2. Pick the app and choose "Is Opened". Select "Run Immediately".{'\n'}3. Add the action "Go to Home Screen".{'\n'}This is easy to turn off, so it relies on willpower.</Text>
+            <Text style={s.p}>Time Blocker adds a Shortcuts action called "Is App Blocked". Set up once per app:{'\n'}1. Open Shortcuts, then Automation, then New Automation, then App. Pick the app, choose "Is Opened", and "Run Immediately".{'\n'}2. Add the action "Is App Blocked" (search for Time Blocker). Set App name to the same name you typed in the Blocks tab.{'\n'}3. Add an "If" action: if the result is "yes", add "Go to Home Screen".{'\n'}Now the app is only bounced while it has an active block. Turning off the automation still bypasses it.</Text>
           </View>
           <Text style={s.p}>Timed and unlocking websites are freed when this app is open at or after the end time, so open it once the timer ends.</Text>
         </ScrollView>
