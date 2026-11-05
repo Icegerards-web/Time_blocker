@@ -5,9 +5,9 @@ Expo (React Native) app for timed blocks of sites and apps, built unsigned with 
 ## Status
 - [x] Expo scaffold, block list UI with locked countdown timers
 - [x] Codemagic workflow producing an unsigned `TimeBlocker.ipa`
-- [ ] Save blocks to disk
-- [ ] Website blocking via a DNS-filter profile
-- [ ] App blocking via Shortcuts automations
+- [x] Save blocks to disk, permanent blocks
+- [x] Website blocking via NextDNS denylist (needs free NextDNS account)
+- [x] App blocking: in-app Shortcuts instructions (manual setup)
 - [ ] Recurring schedules
 
 ## Limits
